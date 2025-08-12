@@ -40,3 +40,43 @@ def export_ics():
         cal.events.add(e)
     bio = io.BytesIO(str(cal).encode("utf-8"))
     bio.seek(0); return bio
+    
+def render_report_text():
+    from datetime import datetime
+    lines = []
+    lines.append("Relatório CaseFlow")
+    lines.append(f"Gerado em: {datetime.utcnow().strftime('%d/%m/%Y %H:%M UTC')}")
+    lines.append("")
+
+    # Resumo por órgão
+    org_counts = db.session.execute(
+        db.select(Case.organization_id, db.func.count(Case.id)).group_by(Case.organization_id)
+    ).all()
+    lines.append("Casos por órgão:")
+    from models import Organization
+    org_map = {o.id: o.name for o in db.session.execute(db.select(Organization)).scalars().all()}
+    for org_id, cnt in org_counts:
+        name = org_map.get(org_id, "(não classificado)")
+        lines.append(f"- {name}: {cnt}")
+    lines.append("")
+
+    # Próximos prazos (30 dias)
+    from datetime import timedelta
+    upcoming = db.session.execute(
+        db.select(Deadline).where(Deadline.due_on <= datetime.utcnow() + timedelta(days=30)).order_by(Deadline.due_on.asc())
+    ).scalars().all()
+    lines.append("Próximos prazos (30 dias):")
+    if not upcoming:
+        lines.append("- (nenhum prazo encontrado)")
+    else:
+        for d in upcoming:
+            lines.append(f"- {d.due_on.strftime('%d/%m/%Y')} — {d.title}")
+    lines.append("")
+
+    # Totais
+    total_cases = db.session.execute(db.select(db.func.count(Case.id))).scalar_one()
+    total_events = db.session.execute(db.select(db.func.count(Event.id))).scalar_one()
+    total_deadlines = db.session.execute(db.select(db.func.count(Deadline.id))).scalar_one()
+    lines.append(f"Totais: casos={total_cases}, eventos={total_events}, prazos={total_deadlines}")
+
+    return "\n".join(lines)
