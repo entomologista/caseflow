@@ -27,14 +27,13 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
 
+# Inicia o agendador na subida do app (Flask 3 não tem before_first_request)
+scheduler_init(app)
+schedule_jobs(app)
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
-@app.before_first_request
-def _bootstrap():
-    scheduler_init(app)
-    schedule_jobs(app)
 
 @app.route("/")
 @login_required
