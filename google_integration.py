@@ -87,6 +87,30 @@ class GoogleClient:
         ).execute()
         return results.get('files', [])
 
+    # Google Docs: cria um documento novo ou atualiza um existente
+    def create_or_update_doc(self, title: str, text_body: str, doc_id: str = None):
+        if doc_id:
+            # Apaga conteúdo (exceto o índice 0) e reinsere o texto
+            self.docs.documents().batchUpdate(
+                documentId=doc_id,
+                body={
+                    "requests": [
+                        {"deleteContentRange": {"range": {"startIndex": 1, "endIndex": 1000000}}},
+                        {"insertText": {"location": {"index": 1}, "text": text_body}}
+                    ]
+                }
+            ).execute()
+            return doc_id
+        else:
+            # Cria documento novo e insere o texto
+            doc = self.docs.documents().create(body={"title": title}).execute()
+            new_id = doc.get("documentId")
+            self.docs.documents().batchUpdate(
+                documentId=new_id,
+                body={"requests": [{"insertText": {"location": {"index": 1}, "text": text_body}}]}
+            ).execute()
+            return new_id
+
 def require_google(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
