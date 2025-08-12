@@ -16,6 +16,13 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///cas
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
+# --- Auto DB init & seed on first run ---
+from sqlalchemy import inspect
+with app.app_context():
+    insp = inspect(db.engine)
+    if not insp.get_table_names():
+        init_db()
+
 login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
@@ -23,12 +30,6 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
-@app.cli.command("db_init")
-def _db_init():
-    with app.app_context():
-        init_db()
-        print("DB initialized.")
 
 @app.before_first_request
 def _bootstrap():
@@ -77,7 +78,6 @@ def oauth2_callback():
     code = request.args.get("code")
     client = GoogleClient.from_env()
     client.fetch_token(code, state=state)
-    # Persist tokens on user
     user = current_user if current_user.is_authenticated else None
     if not user:
         flash("Please log in first.", "warning")
@@ -102,7 +102,6 @@ def sync_gmail():
                       occurred_on=dt.datetime.utcfromtimestamp(int(msg["internalDate"])/1000.0),
                       raw_id=msg["id"], source="gmail")
         db.session.add(event)
-        # infer deadlines
         for d in infer_deadlines(msg.get("payload_text","")):
             db.session.add(Deadline(case_id=case.id, title=d["title"], due_on=d["due_on"], source="parser"))
         created += 1

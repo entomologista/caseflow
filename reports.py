@@ -1,4 +1,4 @@
-import io, csv, datetime as dt
+import io, csv
 from models import db, Case, Deadline, Event
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas

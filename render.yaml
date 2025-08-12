@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: flask --app app.py db_init && gunicorn -w 2 -b 0.0.0.0:${PORT} app:app
+    startCommand: gunicorn -w 2 -b 0.0.0.0:${PORT} app:app
     envVars:
       - key: FLASK_SECRET_KEY
         generateValue: true
@@ -20,11 +20,3 @@ services:
         value: "email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/drive.readonly"
       - key: SYNC_INTERVAL_MINUTES
         value: "30"
-      - key: SMTP_HOST
-        value: "smtp.gmail.com"
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
-        sync: false

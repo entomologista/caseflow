@@ -3,25 +3,11 @@
 <h4>{{ case.title }} <small class="text-muted">({{ case.number or '-' }})</small></h4>
 <p>Status: <span class="badge bg-info">{{ case.status }}</span></p>
 <div class="row g-3">
-  <div class="col-md-6">
-    <div class="stat">
-      <h6>Eventos</h6>
-      <ul class="mb-0">
-        {% for e in events %}
-          <li>{{ e.occurred_on.strftime("%d/%m/%Y") }} — {{ e.kind }} — {{ e.title }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="stat">
-      <h6>Prazos</h6>
-      <ul class="mb-0">
-        {% for d in deadlines %}
-          <li>{{ d.due_on.strftime("%d/%m/%Y") }} — {{ d.title }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+  <div class="col-md-6"><div class="stat"><h6>Eventos</h6><ul class="mb-0">
+    {% for e in events %}<li>{{ e.occurred_on.strftime("%d/%m/%Y") }} — {{ e.kind }} — {{ e.title }}</li>{% endfor %}
+  </ul></div></div>
+  <div class="col-md-6"><div class="stat"><h6>Prazos</h6><ul class="mb-0">
+    {% for d in deadlines %}<li>{{ d.due_on.strftime("%d/%m/%Y") }} — {{ d.title }}</li>{% endfor %}
+  </ul></div></div>
 </div>
 {% endblock %}

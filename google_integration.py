@@ -55,9 +55,8 @@ class GoogleClient:
         creds = Credentials.from_authorized_user_info(json.loads(user.google_token))
         return cls(creds)
 
-    # Gmail
     def pull_gmail(self, query=""):
-        msgs = self.gmail.users().messages().list(userId='me', q=query, maxResults=100).execute().get('messages',[])
+        msgs = self.gmail.users().messages().list(userId='me', q=query, maxResults=50).execute().get('messages',[])
         out = []
         for m in msgs:
             msg = self.gmail.users().messages().get(userId='me', id=m['id'], format='full').execute()
@@ -79,15 +78,13 @@ class GoogleClient:
             })
         return out
 
-    # Drive
     def pull_drive(self):
         results = self.drive.files().list(
-            pageSize=100, fields="files(id, name, mimeType, modifiedTime)",
+            pageSize=50, fields="files(id, name, mimeType, modifiedTime)",
             q="mimeType='application/vnd.google-apps.document' or mimeType='application/vnd.google-apps.spreadsheet'"
         ).execute()
         return results.get('files', [])
 
-# Decorator to ensure Google is connected
 def require_google(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
