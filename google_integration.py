@@ -10,6 +10,8 @@ class GoogleClient:
         self.creds = creds
         self.gmail = build('gmail','v1', credentials=creds)
         self.drive = build('drive','v3', credentials=creds)
+        self.docs = build('docs','v1', credentials=creds)
+
 
     @classmethod
     def from_env(cls):
@@ -94,3 +96,28 @@ def require_google(fn):
             return redirect(url_for("connect_google"))
         return fn(*args, **kwargs)
     return wrapper
+
+    # Google Docs: cria um documento novo (ou atualiza se doc_id for dado)
+    def create_or_update_doc(self, title: str, text_body: str, doc_id: str = None):
+        if doc_id:
+            # Limpa e reinsere o conteúdo
+            self.docs.documents().batchUpdate(
+                documentId=doc_id,
+                body={
+                    "requests": [
+                        {"deleteContentRange": {"range": {"startIndex": 1, "endIndex": 1_000_000}}},
+                        {"insertText": {"location": {"index": 1}, "text": text_body}}
+                    ]
+                }
+            ).execute()
+            return doc_id
+        else:
+            # Cria novo documento e insere conteúdo
+            doc = self.docs.documents().create(body={"title": title}).execute()
+            new_id = doc.get("documentId")
+            self.docs.documents().batchUpdate(
+                documentId=new_id,
+                body={"requests": [{"insertText": {"location": {"index": 1}, "text": text_body}}]}
+            ).execute()
+            # Opcional: mover/compartilhar via Drive API se quiser
+            return new_id
