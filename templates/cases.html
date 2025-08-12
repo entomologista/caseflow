@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex mb-3">
+  <form class="flex-grow-1" method="get">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Buscar casos por título">
+  </form>
+  <a class="btn btn-outline-secondary ms-2" href="/export/csv">CSV</a>
+  <a class="btn btn-outline-secondary ms-2" href="/export/pdf">PDF</a>
+  <a class="btn btn-outline-secondary ms-2" href="/export/ics">ICS</a>
+</div>
+<div class="list-group">
+  {% for c in items %}
+  <a class="list-group-item list-group-item-action" href="/cases/{{ c.id }}">
+    <div class="d-flex justify-content-between">
+      <div><strong>{{ c.title }}</strong> <small class="text-muted">({{ c.number or '-' }})</small></div>
+      <span class="badge bg-info">{{ c.status }}</span>
+    </div>
+  </a>
+  {% else %}<em>Sem casos ainda.</em>{% endfor %}
+</div>
+{% endblock %}
