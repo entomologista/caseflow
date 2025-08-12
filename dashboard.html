@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="stat">
+      <h5>Casos em andamento</h5>
+      <div class="display-6">{{ open_cases }}</div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="stat">
+      <h5>Por órgão</h5>
+      <ul class="mb-0">
+      {% for name, count in by_org %}
+        <li>{{ name or "(não classificado)" }}: {{ count }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="stat">
+      <h5>Próximos prazos</h5>
+      {% if upcoming %}
+        <ul class="mb-0">
+          {% for d in upcoming %}
+            <li><strong>{{ d.title }}</strong> — {{ d.due_on.strftime("%d/%m/%Y") }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <em>Nenhum prazo encontrado.</em>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
