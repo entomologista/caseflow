@@ -11,7 +11,7 @@ class GoogleClient:
         self.gmail = build('gmail','v1', credentials=creds)
         self.drive = build('drive','v3', credentials=creds)
         self.docs = build('docs','v1', credentials=creds)
-
+        self.docs = build('docs','v1', credentials=creds)
 
     @classmethod
     def from_env(cls):
