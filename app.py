@@ -164,5 +164,17 @@ def export_deadlines_ics():
     out = export_ics()
     return send_file(out, mimetype="text/calendar", as_attachment=True, download_name="deadlines.ics")
 
+@app.route("/export/gdoc")
+@login_required
+@require_google
+def export_google_doc():
+    from reports import render_report_text
+    content = render_report_text()
+    client = GoogleClient.from_user(current_user)
+    doc_id = client.create_or_update_doc(title="Relatório CaseFlow", text_body=content)
+    flash(f"Relatório criado no Google Docs. Abra pelo link: https://docs.google.com/document/d/{doc_id}/edit", "success")
+    return redirect(url_for("cases"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
